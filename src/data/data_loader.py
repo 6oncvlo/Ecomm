@@ -1,4 +1,6 @@
 import pandas as pd
+from src.utils.utils import downcast_cols
+
 
 def load_data(data_paths: dict):
 
@@ -13,9 +15,13 @@ def prepare_data(data: dict):
     # convert timestamp to Unix format and event type to a category
     data['events']['timestamp'] = pd.to_datetime(data['events']['timestamp'], unit='ms')
     data['events']['event'] = data['events']['event'].astype('category')
+    # sort events by visitor and timestamp and define sessions based on 30min duration
+    data['events'] = data['events'].sort_values(by=['visitorid', 'timestamp'])
+    data['events']['session_gap'] = data['events'].groupby('visitorid')['timestamp'].diff().dt.total_seconds() > 1800
+    data['events']['session_id'] = data['events'].groupby('visitorid')['session_gap'].cumsum()
+    data['events'].drop(columns=['session_gap'], inplace=True)
     # downcast integers to the smallest possible type
     data['events']['transactionid'] = data['events']['transactionid'].fillna(value=-1).astype('int64')
-    for col in ['visitorid', 'itemid', 'transactionid']:
-        data['events'][col] = pd.to_numeric(data['events'][col], downcast='integer')
+    data['events'] = downcast_cols(dataframe = data['events'])
 
     return data
