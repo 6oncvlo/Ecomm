@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def downcast_cols(dataframe: pd.DataFrame):
     """ downcast floats & integers to the smallest possible type """
 

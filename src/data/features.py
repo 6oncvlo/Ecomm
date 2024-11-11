@@ -1,6 +1,7 @@
 import pandas as pd
 from src.utils.utils import downcast_cols
 
+
 def visitor_features(data: dict):
     
     # count event types at visitorid level
@@ -18,7 +19,6 @@ def visitor_features(data: dict):
         .groupby('visitorid')['transactionid'].nunique()
         .reindex(output.index, fill_value=0).astype('int32')
     )
-
 
     # calculate time-based features for each event type
     # filter events where the count of each event type is greater than 1 for each visitorid
