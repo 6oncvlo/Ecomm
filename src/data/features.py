@@ -1,72 +1,66 @@
 import pandas as pd
+import numpy as np
 from src.utils.utils import downcast_cols
 
 def visitor_features(data: dict):
-    """Generate visitor-level features."""
-
+    """Generate visitor-level features based on event data."""
+    
     # Step 1: Count event types (view, add to cart, transaction) per visitor
-    output = (
+    event_counts = (
         data['events']
         .groupby(['visitorid', 'event'], observed=True)
         .size()
         .unstack(fill_value=0)
-        .rename(columns={'view': 'num_views', 'addtocart': 'num_a2cart', 'transaction': 'num_itemsbought'})
+        .rename(columns={
+            'view': 'num_views', 
+            'addtocart': 'num_add_to_cart', 
+            'transaction': 'num_items_bought'
+        })
         .astype('int32')
     )
     
-    # Step 2: Add a total records column per visitor
-    output['records'] = output.sum(axis=1).astype('int32')
-
-    # Step 3: Count unique transactions per visitor
-    output['num_txs'] = (
+    # Step 2: Calculate total records and unique transactions per visitor
+    event_counts['total_events'] = event_counts.sum(axis=1).astype('int32')
+    event_counts['num_transactions'] = (
         data['events']
         .loc[data['events']['transactionid'] != -1]
         .groupby('visitorid', observed=True)['transactionid']
         .nunique()
-        .reindex(output.index, fill_value=0)
+        .reindex(event_counts.index, fill_value=0)
         .astype('int32')
     )
 
-    # Step 4: Calculate time-based statistics (min, mean, max, std) for each consecutive event type
-    valid_visitor_ids = output.loc[output[['num_views', 'num_a2cart', 'num_txs']].gt(1).any(axis=1)].index
-    time_stats = data['events'].loc[data['events']['visitorid'].isin(valid_visitor_ids)].copy()
+    # Step 3: Calculate time-based statistics (min, mean, max, std) for consecutive events
+    valid_visitors = event_counts.loc[event_counts[['num_views', 'num_add_to_cart', 'num_transactions']].gt(1).any(axis=1)].index
+    time_data = data['events'][data['events']['visitorid'].isin(valid_visitors)].copy()
     
-    time_stats['time_diff_seconds'] = (
-        time_stats.groupby(['visitorid', 'event'], observed=True)['timestamp']
+    time_data['time_diff_seconds'] = (
+        time_data.groupby(['visitorid', 'event'], observed=True)['timestamp']
         .diff()
         .dt.total_seconds()
-    )
-    time_stats.dropna(inplace=True)
-
-    # Aggregate time statistics for each event type
+    ).dropna()
+    
     time_stats = (
-        time_stats.groupby(['visitorid', 'event'], observed=True)['time_diff_seconds']
+        time_data.groupby(['visitorid', 'event'], observed=True)['time_diff_seconds']
         .agg(['min', 'mean', 'max', 'std'])
+        .unstack('event')
         .fillna(-1)
         .round(1)
-        .unstack('event')
     )
+    time_stats.columns = [f"{stat}_{event}_delta" for stat in ['min', 'mean', 'max', 'std'] for event in ['addtocart', 'transaction', 'view']]
 
-    # Rename columns for time-based statistics
-    time_stats.columns = [
-        f"{stat}_{event_type}_delta" 
-        for stat in ['min', 'mean', 'max', 'std'] 
-        for event_type in ['addtocart', 'transaction', 'view']
-    ]
+    # Merge time stats into main output
+    output = event_counts.join(time_stats, how='left').fillna(-1)
 
-    # Merge time statistics into the main output DataFrame
-    output = output.join(time_stats, how='left').fillna(-1)
-
-    # Step 5: Extract hourly and daily features
+    # Step 4: Generate hourly and daily activity features
     data['events']['hour_range'] = pd.cut(
-        data['events']['timestamp'].dt.hour,
-        bins=[0, 6, 12, 18, 24],
-        labels=['0006h', '0612h', '1218h', '1824h'],
+        data['events']['timestamp'].dt.hour, 
+        bins=[0, 6, 12, 18, 24], 
+        labels=['0006h', '0612h', '1218h', '1824h'], 
         right=False
     )
     data['events']['day_of_week'] = data['events']['timestamp'].dt.day_name().str.lower()
 
-    # Create pivot tables for hourly and daily activity, adding prefixes to column names
     hourly_activity = (
         data['events']
         .pivot_table(index='visitorid', columns='hour_range', aggfunc='size', fill_value=0, observed=True)
@@ -79,14 +73,46 @@ def visitor_features(data: dict):
         .add_prefix('numevents_')
     )
 
-    # Merge hourly and daily activity features into the main output DataFrame
-    output = output.join(hourly_activity, how='left').fillna(0)
-    output = output.join(daily_activity, how='left').fillna(0)
+    # Merge hourly and daily activity into the main output
+    output = output.join([hourly_activity, daily_activity], how='left').fillna(0)
 
-    # Step 6: Downcast integer columns for efficient storage
+    # Step 5: Calculate burst activity (views per minute) and repetitive behavior
+    data['events']['minute'] = data['events']['timestamp'].dt.floor('T')
+    views_per_min = (
+        data['events'][data['events']['event'] == 'view']
+        .groupby(['visitorid', 'minute'])
+        .size()
+        .reset_index(name='views_per_minute')
+    )
+    max_views_per_min = views_per_min.groupby('visitorid')['views_per_minute'].max()
+    output['max_views_per_minute'] = max_views_per_min
+    output['burst_activity_flag'] = (max_views_per_min > 10).astype(int)
+
+    # Calculate repetitive behavior by identifying consecutive views on the same item
+    data['events']['next_itemid'] = data['events'].groupby('visitorid')['itemid'].shift(-1)
+    data['events']['is_repetitive'] = (
+        (data['events']['event'] == 'view') & 
+        (data['events']['itemid'] == data['events']['next_itemid'])
+    ).astype(int)
+    repetitive_counts = data['events'].groupby('visitorid')['is_repetitive'].sum()
+    output['repetitive_action_count'] = repetitive_counts
+    output['cyclic_behavior_flag'] = (repetitive_counts > 5).astype(int)
+
+    # Step 6: Event sequence analysis (e.g., view → add to cart → transaction)
+    data['events']['next_event'] = data['events'].groupby('visitorid')['event'].shift(-1)
+    data['events']['second_next_event'] = data['events'].groupby('visitorid')['event'].shift(-2)
+    data['events']['sequence_flag'] = (
+        (data['events']['event'] == 'view') & 
+        (data['events']['next_event'] == 'addtocart') & 
+        (data['events']['second_next_event'] == 'transaction')
+    ).astype(int)
+    output['view_add_to_cart_transaction_count'] = data['events'].groupby('visitorid')['sequence_flag'].sum()
+
+    # Step 7: Downcast columns to reduce memory usage
     output = downcast_cols(output)
 
     return output
+
 
 
 """
