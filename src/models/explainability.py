@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-def feature_importance(model, dataframe: pd.DataFrame, model_columns: list)->pd.DataFrame:
+def feature_importance(model, dataframe: pd.DataFrame, modeling_columns: list)->pd.DataFrame:
     
-    dataframe = dataframe.loc[:, model_columns]
+    dataframe = dataframe.loc[:, modeling_columns]
     # Initialize array to store feature contributions
     feature_importances = np.zeros(dataframe.shape[1])
 
@@ -18,5 +18,5 @@ def feature_importance(model, dataframe: pd.DataFrame, model_columns: list)->pd.
 
     # Normalize to get relative feature contributions
     feature_importances /= feature_importances.sum()
-    feature_contributions = pd.Series(feature_importances, index=model_columns)
+    feature_contributions = pd.Series(feature_importances, index=modeling_columns)
     return pd.DataFrame(feature_contributions, columns=['weight']).sort_values(by='weight', ascending=False)
