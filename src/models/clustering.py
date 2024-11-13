@@ -40,7 +40,7 @@ class AnomalyDetection:
         return self.model.fit_predict(X)
 
 
-    def get_scores(self, X):
+    def scoring(self, X):
         """
         Returns anomaly or similarity scores based on the method.
         
