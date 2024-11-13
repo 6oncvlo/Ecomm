@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from src.utils.utils import downcast_cols
 
-def visitor_features(data: dict):
+def visitor_features(data: dict, config: dict):
     """Generate visitor-level features based on event data."""
     
     # Step 1: Count event types (view, add to cart, transaction) per visitor
@@ -77,7 +77,7 @@ def visitor_features(data: dict):
     output = output.join([hourly_activity, daily_activity], how='left').fillna(0)
 
     # Step 5: Calculate burst activity (views per minute) and repetitive behavior
-    data['events']['minute'] = data['events']['timestamp'].dt.floor('T')
+    data['events']['minute'] = data['events']['timestamp'].dt.floor('min')
     views_per_min = (
         data['events'][data['events']['event'] == 'view']
         .groupby(['visitorid', 'minute'])
@@ -86,7 +86,8 @@ def visitor_features(data: dict):
     )
     max_views_per_min = views_per_min.groupby('visitorid')['views_per_minute'].max()
     output['max_views_per_minute'] = max_views_per_min
-    output['burst_activity_flag'] = (max_views_per_min > 10).astype(int)
+    output['burst_activity_flag'] = (max_views_per_min > config['visitor_features']['thold_max_views_per_minute']).astype(int)
+    output[['max_views_per_minute', 'burst_activity_flag']] = output[['max_views_per_minute', 'burst_activity_flag']].fillna(-1)
 
     # Calculate repetitive behavior by identifying consecutive views on the same item
     data['events']['next_itemid'] = data['events'].groupby('visitorid')['itemid'].shift(-1)
@@ -96,7 +97,7 @@ def visitor_features(data: dict):
     ).astype(int)
     repetitive_counts = data['events'].groupby('visitorid')['is_repetitive'].sum()
     output['repetitive_action_count'] = repetitive_counts
-    output['cyclic_behavior_flag'] = (repetitive_counts > 5).astype(int)
+    output['cyclic_behavior_flag'] = (repetitive_counts > config['visitor_features']['thold_repetitive_action']).astype(int)
 
     # Step 6: Event sequence analysis (e.g., view → add to cart → transaction)
     data['events']['next_event'] = data['events'].groupby('visitorid')['event'].shift(-1)
