@@ -23,8 +23,9 @@ class ModelExplainability:
 
         # Normalize to get relative feature contributions
         feature_importances /= feature_importances.sum()
-        feature_contributions = pd.Series(feature_importances, index=self.data.columns)
-        return pd.DataFrame(feature_contributions, columns=['weight']).sort_values(by='weight', ascending=False)
+        return pd.DataFrame(
+            list(zip(self.data.columns, feature_importances)), columns=['feature','weight']
+            ).set_index(keys='feature').sort_values(by=['weight'], ascending=False)
     
     class ShapValues:
         def __init__(self, parent):
@@ -68,3 +69,11 @@ class ModelExplainability:
                     , shap_values = self.shap_values[instance_index]
                     , features = self.parent.data.iloc[instance_index]
                     )
+                
+        def importance_values(self):
+
+            shapX = pd.DataFrame(self.shap_values, columns = self.parent.data.columns)
+            vals = np.abs(shapX.values).mean(0)
+            return pd.DataFrame(
+                list(zip(self.parent.data.columns, vals)), columns=['feature','weight']
+                ).set_index(keys='feature').sort_values(by=['weight'], ascending=False)
