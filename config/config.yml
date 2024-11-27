@@ -20,3 +20,8 @@ model:
       random_state: 42
       verbose: 0
       warm_start: False
+  dbscan:
+    params:
+      eps: 0.7
+      min_samples: 20
+      metric: 'euclidean'
