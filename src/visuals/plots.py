@@ -44,5 +44,5 @@ def k_distance(dataframe: pd.DataFrame, zoom_last_n_points: int = 20):
     # Show the plot
     plt.xlabel("Points (sorted by distance)")
     plt.ylabel(f"{n_neighbors}-distance")
-    plt.title("Plot Title")
+    plt.title("k-Distance Plot for Estimating DBSCAN Epsilon")
     plt.show()
