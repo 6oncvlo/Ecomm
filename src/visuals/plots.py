@@ -24,17 +24,17 @@ def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: 
     plt.tight_layout()
     plt.show()
 
-def k_distance(dataframe: pd.DataFrame):
+def k_distance(dataframe: pd.DataFrame, zoom_last_n_points: int = 20):
 
+    # n_neighbors/min_points based rule of thumb
     n_neighbors = 2*len(dataframe.columns)
-    zoom_last_n_points = 30
     
     # Plot k-distance graph
     distances = compute_k_distances(data=dataframe.astype('float32'), n_neighbors=n_neighbors)
     plt.plot(range(len(distances)), distances, marker='o', linestyle='-')
 
     # Set x-axis limits and ticks
-    x_min = dataframe.shape[0] - 50
+    x_min = dataframe.shape[0] - zoom_last_n_points
     x_max = dataframe.shape[0] + 1
     x_mid = (x_min + x_max) // 2
 
