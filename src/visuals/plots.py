@@ -24,39 +24,25 @@ def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: 
     plt.tight_layout()
     plt.show()
 
-def k_distance(sampling_method: str, sample_size: float, dataframe: pd.DataFrame):
+def k_distance(dataframe: pd.DataFrame):
 
-    n_neighbors = 2*(len(dataframe.columns)-1)
-    zoom_last_n_points = 20
+    n_neighbors = 2*len(dataframe.columns)
+    zoom_last_n_points = 30
     
-    # Perform stratified or random sampling.
-    datasets = sampling(
-        sampling_method = sampling_method
-        , n_splits = 6
-        , sample_size = sample_size
-        , dataframe = dataframe
-        )
+    # Plot k-distance graph
+    distances = compute_k_distances(data=dataframe.astype('float32'), n_neighbors=n_neighbors)
+    plt.plot(range(len(distances)), distances, marker='o', linestyle='-')
 
-    # Plot k-distance graphs for all datasets
-    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-    axes = axes.flatten()
-    for i, (data, ax) in enumerate(zip(datasets, axes)):
-        # compute k-distance for each dataset
-        distances = compute_k_distances(data=data.astype('float32'), n_neighbors=n_neighbors)
+    # Set x-axis limits and ticks
+    x_min = dataframe.shape[0] - 50
+    x_max = dataframe.shape[0] + 1
+    x_mid = (x_min + x_max) // 2
 
-        # Plot distances
-        ax.plot(range(len(distances)), distances, marker='o', linestyle='-')
-        ax.set_xlabel('Points (sorted by distance)')
-        ax.set_ylabel(f'{n_neighbors}-distance')
-        ax.set_title(f'Dataset {i + 1}')
+    plt.xlim([x_min, x_max])  # Correct method
+    plt.xticks([x_min, x_mid, x_max], labels=[f'{x_min}', f'{x_mid}', f'{x_max}'])
 
-        # Set x-axis limits and ticks
-        x_min = data.shape[0] - zoom_last_n_points
-        x_max = data.shape[0] + 1
-        x_mid = (x_min + x_max) // 2
-        ax.set_xlim([x_min, x_max])
-        ax.set_xticks([x_min, x_mid, x_max])
-        ax.set_xticklabels([f'{x_min}', f'{x_mid}', f'{x_max}'])
-
-    plt.tight_layout()
+    # Show the plot
+    plt.xlabel("Points (sorted by distance)")
+    plt.ylabel(f"{n_neighbors}-distance")
+    plt.title("Plot Title")
     plt.show()
