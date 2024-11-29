@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.utils.utils import downcast_cols
+from src.data.utils import downcast_cols
 
 def visitor_features(data: dict, config: dict, drop_bouncers: bool = False):
     """Generate visitor-level features based on event data."""
@@ -99,7 +99,7 @@ def visitor_features(data: dict, config: dict, drop_bouncers: bool = False):
 
     # Merge burst activity into the main output
     output = output.join(max_views_per_min, how='left').fillna(-1)
-    output['burst_activity_flag'] = (output['max_views_per_min'] > config['visitor_features']['thold_max_views_per_minute']).astype(int).fillna(-1)
+    # output['burst_activity_flag'] = (output['max_views_per_min'] > config['visitor_features']['thold_max_views_per_minute']).astype(int).fillna(-1)
 
     # Calculate repetitive behavior by identifying consecutive views on the same item
     data['events']['next_itemid'] = data['events'].groupby('visitorid')['itemid'].shift(-1)
@@ -112,7 +112,7 @@ def visitor_features(data: dict, config: dict, drop_bouncers: bool = False):
 
     # Merge repetitive behaviour into the main output
     output = output.join(repetitive_counts, how='left')
-    output['cyclic_behavior_flag'] = (output['repetitive_action_count'] > config['visitor_features']['thold_repetitive_action']).astype(int)
+    # output['cyclic_behavior_flag'] = (output['repetitive_action_count'] > config['visitor_features']['thold_repetitive_action']).astype(int)
 
     # Step 7: Event sequence analysis (e.g., view → add to cart → transaction)
     data['events']['next_event'] = data['events'].groupby('visitorid')['event'].shift(-1)
