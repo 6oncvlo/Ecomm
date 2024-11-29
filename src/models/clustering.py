@@ -37,8 +37,10 @@ class AnomalyDetection:
         For Isolation Forest, returns -1 for anomalies and 1 for normal points.
         For DBSCAN, returns cluster labels (-1 for noise points).
         """
-        return self.model.fit_predict(X)
-
+        if self.method == "dbscan":
+            return self.model.labels_
+        else:
+            return self.model.fit_predict(X)
 
     def scoring(self, X):
         """
@@ -50,7 +52,7 @@ class AnomalyDetection:
         if self.method == "isolation_forest":
             return self.model.decision_function(X)
         elif self.method == "dbscan":
-            labels = self.model.fit_predict(X)
+            labels = self.model.labels_
             # Silhouette score is only defined if there are more than 1 cluster and no noise-only labels
             if len(set(labels)) > 1 and len(set(labels)) < len(X):
                 return silhouette_score(X, labels)
