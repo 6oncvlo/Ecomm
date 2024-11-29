@@ -1,12 +1,24 @@
 import numpy as np
 import pandas as pd
 import shap
+from sklearn.tree import plot_tree, export_text
+import matplotlib.pyplot as plt
 
 class ModelExplainability:
     def __init__(self, model, data: pd.DataFrame):
         self.model = model
         self.data = data
         self.shap_values = self.ShapValues(self)
+
+    def tree_estimator(self, n_estimator: int = 0, visual: bool = True):
+        # Select tree estimator
+        estimator = self.model.model.estimators_[n_estimator]
+        if visual:
+            plt.figure(figsize=(20, 10))
+            plot_tree(estimator)
+            plt.show()
+        else:
+            return export_text(estimator)
 
     def feature_importance(self):
         # Initialize array to store feature contributions
