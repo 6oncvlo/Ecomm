@@ -4,3 +4,4 @@ pyyaml
 scikit-learn
 shap
 matplotlib
+seaborn
