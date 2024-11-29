@@ -3,17 +3,6 @@ from sklearn.model_selection import StratifiedShuffleSplit
 import faiss
 import numpy as np
 
-def downcast_cols(dataframe: pd.DataFrame):
-    """Downcast floats & integers to the smallest possible type."""
-
-    fcols = dataframe.select_dtypes('float').columns
-    icols = dataframe.select_dtypes('integer').columns
-
-    dataframe[fcols] = dataframe[fcols].apply(pd.to_numeric, downcast='float')
-    dataframe[icols] = dataframe[icols].apply(pd.to_numeric, downcast='integer')
-        
-    return dataframe
-
 def sampling(sampling_method: str, n_splits: int, sample_size: float, dataframe: pd.DataFrame):
     """Perform stratified or random sampling. Last column is label for stratified sampling."""
     

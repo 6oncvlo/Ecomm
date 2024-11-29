@@ -1,11 +1,20 @@
 import pandas as pd
-import numpy as np
+from src.data.utils import analyze_dataframe, correlated_features
 
-def normalization(dataframe: pd.DataFrame, method: str = 'z_score'):
+def feature_selection(dataframe: pd.DataFrame, min_percentage_threshold: float = 95.0, correlated_count_threshold: float = None):
 
-    if method=='z_score':
-        dataframe = (dataframe - dataframe.mean())/dataframe.std()
-    elif method=='min_max':
-        dataframe = (dataframe-dataframe.min())/(dataframe.max()-dataframe.min())
+    # minimum analysis and summary stats excluding the minimum
+    df_analysis = analyze_dataframe(df=dataframe)
+    # select features to keep based on the share of the minimum value
+    keep_features = df_analysis[df_analysis['min_percentage'] < min_percentage_threshold]['feature'].to_list()
+    dataframe = dataframe[keep_features]
+
+    # get number of correlations per feature
+    df_analysis = correlated_features(dataframe = dataframe, corr_threshold = 0.8)
+    # set correlated_count_threshold to half of the total number of features
+    if correlated_count_threshold == None:
+        correlated_count_threshold = df_analysis.shape[0]//2
+    # select features to keep based on the total number of features correlated with
+    keep_features = df_analysis[df_analysis['correlated_count'] < correlated_count_threshold]['feature'].to_list()
     
-    return dataframe
+    return dataframe[keep_features]
