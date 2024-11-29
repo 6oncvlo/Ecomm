@@ -24,7 +24,7 @@ class ModelExplainability:
         # Initialize array to store feature contributions
         feature_importances = np.zeros(self.data.shape[1])
         # Access 'estimators_' safely
-        estimators = self.model.get_model_attribute("estimators_")
+        estimators = self.model.model.estimators_
 
         for tree in estimators:
             tree_features = tree.tree_.feature

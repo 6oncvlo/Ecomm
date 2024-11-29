@@ -56,10 +56,3 @@ class AnomalyDetection:
                 return silhouette_score(X, labels)
             else:
                 raise ValueError("Silhouette score not defined for the current DBSCAN clustering.")
-
-    def get_model_attribute(self, attr_name):
-        """Get an attribute from the underlying model if it exists."""
-        if hasattr(self.model, attr_name):
-            return getattr(self.model, attr_name)
-        else:
-            raise AttributeError(f"The attribute '{attr_name}' does not exist for the current model.")
