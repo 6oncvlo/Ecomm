@@ -1,26 +1,32 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from src.utils.utils import sampling, compute_k_distances
 
 def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: str):
 
-    # Create a figure with 1 row and 3 columns for the subplots
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))  # Adjust the size as needed
+    # Set a seaborn style for better aesthetics and create a single figure for all KDE plots
+    sns.set(style="whitegrid")
+    plt.figure(figsize=(10, 6))
 
-    # First plot: KDE of the entire measure
-    dataframe[measure].plot.kde(ax=axes[0])
-    axes[0].set_title(f'KDE of {xlabel} | ALL')
-    axes[0].set_xlabel(xlabel)
-    axes[0].set_ylabel('Density')
+    # Plot KDE for the entire measure with a shaded area
+    sns.kdeplot(data=dataframe, x=measure, label='ALL', fill=True, color='blue', alpha=0.2, linewidth=2)
 
-    for val, i in zip(dataframe[column_group].unique(), [1,2]):
-        # Plot per value: KDE for the val subset
-        dataframe[dataframe[column_group] == val][measure].plot.kde(ax=axes[i])
-        axes[i].set_title(f'KDE of {xlabel} | {val}')
-        axes[i].set_xlabel(xlabel)
-        axes[i].set_ylabel('Density')
+    # Use seaborn's kdeplot to plot KDE for each unique value in column_group
+    unique_values = dataframe[column_group].unique()
+    palette = sns.color_palette("Set2", len(unique_values))
+    for i, val in enumerate(unique_values):
+        sns.kdeplot(
+            data=dataframe[dataframe[column_group] == val],
+            x=measure, label=str(val), fill=True, color=palette[i], alpha=0.4, linewidth=2
+            )
 
-    # Adjust layout to make sure everything fits well and show the plot
+    # Add titles, labels, and legend to differentiate the curves
+    plt.title(f'KDE of {xlabel}')
+    plt.xlabel(xlabel)
+    plt.ylabel('Density')
+    plt.legend(title=column_group)
+    # Show the plot
     plt.tight_layout()
     plt.show()
 
