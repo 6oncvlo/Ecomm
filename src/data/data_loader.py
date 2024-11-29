@@ -1,5 +1,5 @@
 import pandas as pd
-from src.utils.utils import downcast_cols
+from src.data.utils import downcast_cols
 
 
 def load_data(data_paths: dict):
