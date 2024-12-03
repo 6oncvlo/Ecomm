@@ -22,6 +22,6 @@ model:
       warm_start: False
   dbscan:
     params:
-      eps: 0.7
-      min_samples: 20
+      eps: #1.2
+      min_samples: 38
       metric: 'euclidean'
