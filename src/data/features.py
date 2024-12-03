@@ -16,18 +16,16 @@ def visitor_features(data: dict, config: dict, drop_bouncers: bool = False):
             'addtocart': 'num_add_to_cart', 
             'transaction': 'num_items_bought'
         })
-        .astype('int32')
     )
     
     # Step 2: Calculate total records and unique transactions per visitor
-    event_counts['total_events'] = event_counts.sum(axis=1).astype('int32')
+    event_counts['total_events'] = event_counts.sum(axis=1)
     event_counts['num_transactions'] = (
         data['events']
         .loc[data['events']['transactionid'] != -1]
         .groupby('visitorid', observed=True)['transactionid']
         .nunique()
         .reindex(event_counts.index, fill_value=0)
-        .astype('int32')
     )
     
     # Step 3: Drop Bouncers - users that only viewed a single page once and didn't add to cart neither purchase
@@ -146,6 +144,7 @@ def visitor_features(data: dict, config: dict, drop_bouncers: bool = False):
     # output = output.join(session_features, how='left').fillna(-1)
 
     # Step 9: Downcast columns to reduce memory usage
+    output[event_counts.columns] = output[event_counts.columns].astype(int)
     output = downcast_cols(output)
 
     return output
