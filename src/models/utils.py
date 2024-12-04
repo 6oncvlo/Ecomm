@@ -6,6 +6,6 @@ def predictions_correction(dataframe: pd.DataFrame):
     dataframe.loc[
         (dataframe['anomaly_label']==1)
         & (dataframe['num_transactions']>0)
-        , 'anomaly_label'] = 0
+        , 'anomaly_label'] = 1
     
     return dataframe
