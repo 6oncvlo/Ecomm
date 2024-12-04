@@ -9,6 +9,7 @@ data_preparation:
     thold_max_views_per_minute: 10
     thold_repetitive_action: 5
 model:
+  features:
   isolation_forest:
     params:
       n_estimators: 100
