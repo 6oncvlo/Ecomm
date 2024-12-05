@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from src.utils.utils import sampling, compute_k_distances
 
-def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: str):
+def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: str, save_path: str = None):
 
     # Set a seaborn style for better aesthetics and create a single figure for all KDE plots
     sns.set(style="whitegrid")
@@ -27,9 +27,10 @@ def kde_group(dataframe: pd.DataFrame, measure: str, column_group: str, xlabel: 
     plt.xlabel(xlabel)
     plt.ylabel('Density')
     plt.legend(title=column_group)
-    # Show the plot
     plt.tight_layout()
-    plt.show()
+    if save_path != None:
+        plt.savefig(f'{save_path}.png')
+    plt.close()
 
 def k_distance(data: np.array, zoom_last_n_points: int = 20):
 
