@@ -9,20 +9,21 @@ data_preparation:
     thold_max_views_per_minute: 10
     thold_repetitive_action: 5
 model:
-  features:
-  isolation_forest:
-    params:
-      n_estimators: 100
-      max_samples: 'auto'
-      contamination: 'auto'
-      max_features: 1.0
-      bootstrap: False
-      n_jobs: -1
-      random_state: 42
-      verbose: 0
-      warm_start: False
-  dbscan:
-    params:
-      eps: #1.2
-      min_samples: 38
-      metric: 'euclidean'
+  anomaly_detection:
+    features:
+    isolation_forest:
+      params:
+        n_estimators: 100
+        max_samples: 'auto'
+        contamination: 'auto'
+        max_features: 1.0
+        bootstrap: False
+        n_jobs: -1
+        random_state: 42
+        verbose: 0
+        warm_start: False
+    dbscan:
+      params:
+        eps: 1.2
+        min_samples: 38
+        metric: 'euclidean'
