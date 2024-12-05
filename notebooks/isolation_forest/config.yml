@@ -13,7 +13,7 @@ model:
     features:
     isolation_forest:
       params:
-        n_estimators: [100]
+        n_estimators: [100, 200]
         max_samples: ['auto']
         contamination: ['auto']
         max_features: [1.0]
