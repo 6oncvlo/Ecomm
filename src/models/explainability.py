@@ -53,7 +53,7 @@ class ModelExplainability:
                 self._shap_values = self.explainer.shap_values(self.parent.data)
             return self._shap_values
     
-        def plot(self, method: str, ind=None, interaction_index=None, instance_index=None):
+        def plot(self, method: str, ind=None, interaction_index=None, instance_index=None, save_path: str = None, show = False):
             # Ensure SHAP values are computed before plotting
             _ = self.shap_values
             
@@ -65,6 +65,7 @@ class ModelExplainability:
                     , max_display = 20
                     , plot_type = "bar"
                     , plot_size = (10,10)
+                    , show = show
                     )
             elif method == 'dependence':
                 # Use a SHAP dependence plot for specific features
@@ -73,6 +74,7 @@ class ModelExplainability:
                     , shap_values = self.shap_values
                     , features = self.parent.data
                     , interaction_index = interaction_index
+                    , show = show
                     )
             elif method == 'instance':
                 # For a specific instance, view SHAP values and plot them
@@ -80,7 +82,11 @@ class ModelExplainability:
                     base_value  = self.explainer.expected_value
                     , shap_values = self.shap_values[instance_index]
                     , features = self.parent.data.iloc[instance_index]
+                    , show = show
                     )
+            if save_path != None:
+                plt.savefig(f'{save_path}.png')
+            plt.close()
                 
         def importance_values(self):
 
