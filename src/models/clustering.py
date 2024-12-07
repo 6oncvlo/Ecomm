@@ -1,11 +1,12 @@
 from sklearn.ensemble import IsolationForest
 from sklearn.cluster import DBSCAN
+import hdbscan
 from sklearn.metrics import silhouette_score
 
 # Dictionary of supported algorithms
 algos = {
     'isolation_forest': IsolationForest,
-    'dbscan': DBSCAN
+    'hdbscan': hdbscan
 }
 
 class AnomalyDetection:
@@ -14,7 +15,7 @@ class AnomalyDetection:
         Initializes the AnomalyDetection model.
 
         Parameters:
-            method (str): The algorithm to use ('isolation_forest' or 'dbscan').
+            method (str): The algorithm to use ('isolation_forest' or 'hdbscan').
             kwargs: Parameters for the specified model.
         """
         self.method = method.lower()
@@ -37,7 +38,7 @@ class AnomalyDetection:
         For Isolation Forest, returns -1 for anomalies and 1 for normal points.
         For DBSCAN, returns cluster labels (-1 for noise points).
         """
-        if self.method == "dbscan":
+        if self.method == "hdbscan":
             return self.model.labels_
         else:
             return self.model.fit_predict(X)
@@ -51,10 +52,6 @@ class AnomalyDetection:
         """
         if self.method == "isolation_forest":
             return self.model.decision_function(X)
-        elif self.method == "dbscan":
+        elif self.method == "hdbscan":
             labels = self.model.labels_
-            # Silhouette score is only defined if there are more than 1 cluster and no noise-only labels
-            if len(set(labels)) > 1 and len(set(labels)) < len(X):
-                return silhouette_score(X, labels)
-            else:
-                raise ValueError("Silhouette score not defined for the current DBSCAN clustering.")
+            return self.model.probabilities_
