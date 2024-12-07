@@ -10,12 +10,15 @@ class ModelExplainability:
         self.data = data
         self.shap_values = self.ShapValues(self)
 
-    def tree_estimator(self, n_estimator: int = 0, visual: bool = True):
+    def tree_estimator(self, n_estimator: int = 0, visual: bool = True, save_path: str =None):
         # Select tree estimator
         estimator = self.model.model.estimators_[n_estimator]
         if visual:
             plt.figure(figsize=(20, 10))
             plot_tree(estimator)
+            if save_path != None:
+                plt.savefig(f'{save_path}.png')
+                plt.close()
             plt.show()
         else:
             return export_text(estimator)
@@ -53,7 +56,7 @@ class ModelExplainability:
                 self._shap_values = self.explainer.shap_values(self.parent.data)
             return self._shap_values
     
-        def plot(self, method: str, ind=None, interaction_index=None, instance_index=None, save_path: str = None, show = False):
+        def plot(self, method: str, ind=None, interaction_index=None, instance_index: int =0, save_path: str = None, show = False):
             # Ensure SHAP values are computed before plotting
             _ = self.shap_values
             
@@ -83,6 +86,7 @@ class ModelExplainability:
                     , shap_values = self.shap_values[instance_index]
                     , features = self.parent.data.iloc[instance_index]
                     , show = show
+                    , matplotlib = True
                     )
             if save_path != None:
                 plt.savefig(f'{save_path}.png')
