@@ -13,6 +13,6 @@ model:
     features:
     hdbscan:
       params:
-        eps: 1.2
-        min_samples: 38
-        metric: 'euclidean'
+        eps: [1.2]
+        min_samples: [38]
+        metric: ['euclidean']
