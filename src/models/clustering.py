@@ -6,7 +6,7 @@ from sklearn.metrics import silhouette_score
 # Dictionary of supported algorithms
 algos = {
     'isolation_forest': IsolationForest,
-    'hdbscan': hdbscan
+    'hdbscan': hdbscan.HDBSCAN
 }
 
 class AnomalyDetection:

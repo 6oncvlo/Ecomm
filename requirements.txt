@@ -1,8 +1,8 @@
-numpy
-pandas
-pyyaml
-scikit-learn
-shap
-matplotlib
-seaborn
-mlflow
+numpy==2.0.0
+pandas==2.2.3
+pyyaml==6.0.2
+scikit-learn==1.5.2
+shap==0.46.0
+matplotlib==3.9.2
+seaborn==0.13.2
+mlflow==2.18.0
