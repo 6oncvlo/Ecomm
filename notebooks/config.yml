@@ -11,8 +11,18 @@ data_preparation:
 model:
   anomaly_detection:
     features:
+    isolation_forest:
+      params:
+        n_estimators: [10, 50]
+        max_samples: ['auto']
+        contamination: ['auto']
+        max_features: [1.0]
+        bootstrap: [False]
+        n_jobs: [-1]
+        random_state: [42]
+        verbose: [0]
+        warm_start: [False]
     hdbscan:
       params:
-        min_cluster_size: [3, 5, 10]
-        min_samples: [20, 40, 50]
-        metric: ['euclidean']
+        min_cluster_size: [1000, 2000, 4000]
+        min_samples: [38]
