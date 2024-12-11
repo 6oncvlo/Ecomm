@@ -21,6 +21,9 @@ Open the terminal and run the following lines of code.
 
 # 5. Install project dependencies
 >> pip install -r requirements.txt
+
+# 6. Launch MLflow UI
+>> mlflow ui
 ```
 
 That's it, you are now ready! 🚀
