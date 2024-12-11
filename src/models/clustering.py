@@ -53,5 +53,4 @@ class AnomalyDetection:
         if self.method == "isolation_forest":
             return self.model.decision_function(X)
         elif self.method == "hdbscan":
-            labels = self.model.labels_
             return self.model.probabilities_
