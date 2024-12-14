@@ -15,7 +15,7 @@ Open the terminal and run the following lines of code.
 # 3. Navigate into the project folder
 >> cd Ecomm
 
-# 4. Set up and activate virtual environment
+# 4. [Optional] Set up and activate virtual environment
 >> python -m venv .venv  
 >> .venv\Scripts\activate
 
