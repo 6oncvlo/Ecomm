@@ -9,6 +9,7 @@ WITH events AS (
             WHEN strftime('%H', timestamp) >= '18' AND strftime('%H', timestamp) < '24' THEN 3
         END AS hour_range
         , strftime('%w', timestamp) AS week_day
+        , (strftime('%s', timestamp) - strftime('%s', LAG(timestamp, 1) OVER (PARTITION BY visitorid, event ORDER BY timestamp))) / 60.0 AS deltat_2equal_events
         , SUM(CASE WHEN event = 'view' THEN 1 ELSE 0 END) OVER (PARTITION BY visitorid, strftime('%Y-%m-%d %H:%M', timestamp)) AS views_per_minute
         -- consecutive events on the same itemid
         , CASE
@@ -40,9 +41,9 @@ WITH events AS (
 visitor_session AS (
     SELECT
         visitorid
-        , MIN(num_views) AS min_vipse
-        , AVG(num_views) AS avg_vipse
-        , MAX(num_views) AS max_vipse
+        , MIN(num_views) AS min_vwpse
+        , AVG(num_views) AS avg_vwpse
+        , MAX(num_views) AS max_vwpse
         , MIN(num_acart) AS min_acpse
         , AVG(num_acart) AS avg_acpse
         , MAX(num_acart) AS max_acpse
@@ -51,8 +52,7 @@ visitor_session AS (
         , MAX(num_purch) AS max_prpse
     FROM (
         SELECT
-            visitorid
-            , session_id
+            visitorid, session_id
             , SUM(CASE WHEN event = 'view' THEN 1 ELSE 0 END) AS num_views
             , SUM(CASE WHEN event = 'addtocart' THEN 1 ELSE 0 END) AS num_acart
             , SUM(CASE WHEN event = 'transaction' THEN 1 ELSE 0 END) AS num_purch
@@ -61,7 +61,6 @@ visitor_session AS (
     )
     GROUP BY visitorid
 )
-
 SELECT
     a.visitorid
     , SUM(CASE WHEN event = 'view' THEN 1 ELSE 0 END) AS num_views
@@ -85,9 +84,18 @@ SELECT
     , SUM(repitem_bview) AS num_repbv
     , SUM(funnel_flag) AS num_funnl
     , MAX(views_per_minute) AS max_vpmin
-    , b.min_vipse
-    , b.avg_vipse
-    , b.max_vipse
+    , MIN(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS min_dltvw
+    , AVG(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS avg_dltvw
+    , MAX(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS max_dltvw
+    , MIN(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS min_dltac
+    , AVG(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS avg_dltac
+    , MAX(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS max_dltac
+    , MIN(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS min_dltpr
+    , AVG(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS avg_dltpr
+    , MAX(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS max_dltpr
+    , b.min_vwpse
+    , b.avg_vwpse
+    , b.max_vwpse
     , b.min_acpse
     , b.avg_acpse
     , b.max_acpse
