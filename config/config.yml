@@ -1,8 +1,8 @@
 data_loader:
-  events: 'C:\Users\DataRetail\events.csv'
-  category_tree: 'C:\Users\DataRetail\category_tree.csv'
-  item_properties_part1: 'C:\Users\DataRetail\item_properties_part1.csv'
-  item_properties_part2: 'C:\Users\DataRetail\item_properties_part2.csv'
+  events: 'C:\Users\gonpr\Downloads\events.csv'
+  category_tree: 'C:\Users\gonpr\Downloads\category_tree.csv'
+  item_properties_part1: 'C:\Users\gonpr\Downloads\item_properties_part1.csv'
+  item_properties_part2: 'C:\Users\gonpr\Downloads\item_properties_part2.csv'
 data_preparation:
   session_duration: 1800
   visitor_features:
