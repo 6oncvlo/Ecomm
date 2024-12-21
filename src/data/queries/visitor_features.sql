@@ -1,4 +1,4 @@
-WITH events AS (
+WITH events_enhanced AS (
     SELECT
         *
         -- time based dimensions
@@ -36,7 +36,7 @@ WITH events AS (
                 AND LEAD(event, 2) OVER (PARTITION BY visitorid ORDER BY timestamp) = 'transaction'
             THEN 1
             ELSE 0 END AS funnel_flag
-    FROM df_events
+    FROM events
 ),
 visitor_session AS (
     SELECT
@@ -56,7 +56,7 @@ visitor_session AS (
             , SUM(CASE WHEN event = 'view' THEN 1 ELSE 0 END) AS num_views
             , SUM(CASE WHEN event = 'addtocart' THEN 1 ELSE 0 END) AS num_acart
             , SUM(CASE WHEN event = 'transaction' THEN 1 ELSE 0 END) AS num_purch
-        FROM events
+        FROM events_enhanced
         GROUP BY visitorid, session_id
     )
     GROUP BY visitorid
@@ -84,15 +84,15 @@ SELECT
     , SUM(repitem_bview) AS num_repbv
     , SUM(funnel_flag) AS num_funnl
     , MAX(views_per_minute) AS max_vpmin
-    , MIN(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS min_dltvw
-    , AVG(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS avg_dltvw
-    , MAX(CASE WHEN event = 'view' THEN deltat_2equal_events END) AS max_dltvw
-    , MIN(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS min_dltac
-    , AVG(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS avg_dltac
-    , MAX(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END) AS max_dltac
-    , MIN(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS min_dltpr
-    , AVG(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS avg_dltpr
-    , MAX(CASE WHEN event = 'transaction' THEN deltat_2equal_events END) AS max_dltpr
+    , COALESCE(MIN(CASE WHEN event = 'view' THEN deltat_2equal_events END), -1) AS min_dltvw
+    , COALESCE(AVG(CASE WHEN event = 'view' THEN deltat_2equal_events END), -1) AS avg_dltvw
+    , COALESCE(MAX(CASE WHEN event = 'view' THEN deltat_2equal_events END), -1) AS max_dltvw
+    , COALESCE(MIN(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END), -1) AS min_dltac
+    , COALESCE(AVG(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END), -1) AS avg_dltac
+    , COALESCE(MAX(CASE WHEN event = 'addtocart' THEN deltat_2equal_events END), -1) AS max_dltac
+    , COALESCE(MIN(CASE WHEN event = 'transaction' THEN deltat_2equal_events END), -1) AS min_dltpr
+    , COALESCE(AVG(CASE WHEN event = 'transaction' THEN deltat_2equal_events END), -1) AS avg_dltpr
+    , COALESCE(MAX(CASE WHEN event = 'transaction' THEN deltat_2equal_events END), -1) AS max_dltpr
     , b.min_vwpse
     , b.avg_vwpse
     , b.max_vwpse
@@ -102,7 +102,7 @@ SELECT
     , b.min_prpse
     , b.avg_prpse
     , b.max_prpse
-FROM events AS a
+FROM events_enhanced AS a
     JOIN visitor_session AS b ON a.visitorid = b.visitorid
 GROUP BY a.visitorid
 HAVING
