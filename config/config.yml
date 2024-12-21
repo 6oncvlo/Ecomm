@@ -7,6 +7,7 @@ data_preparation:
   session_duration: 1800
 features:
   visitor: '../src/data/queries/visitor_features.sql'
+  item: '../src/data/queries/item_features.sql'
 model:
   anomaly_detection:
     features:
@@ -21,8 +22,7 @@ model:
         random_state: 42
         verbose: 0
         warm_start: False
-    dbscan:
+    hdbscan:
       params:
-        eps: 1.2
+        min_cluster_size: 4000
         min_samples: 38
-        metric: 'euclidean'
