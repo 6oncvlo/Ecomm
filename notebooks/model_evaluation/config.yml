@@ -1,13 +1,13 @@
 data_loader:
-  events: 'C:\Users\DataRetail\events.csv'
-  category_tree: 'C:\Users\DataRetail\category_tree.csv'
-  item_properties_part1: 'C:\Users\DataRetail\item_properties_part1.csv'
-  item_properties_part2: 'C:\Users\DataRetail\item_properties_part2.csv'
+  events: 'C:\Users\gonpr\Downloads\events.csv'
+  category_tree: 'C:\Users\gonpr\Downloads\category_tree.csv'
+  item_properties_part1: 'C:\Users\gonpr\Downloads\item_properties_part1.csv'
+  item_properties_part2: 'C:\Users\gonpr\Downloads\item_properties_part2.csv'
 data_preparation:
   session_duration: 1800
-  visitor_features:
-    thold_max_views_per_minute: 10
-    thold_repetitive_action: 5
+features:
+  visitor: '../src/data/queries/visitor_features.sql'
+  item: '../src/data/queries/item_features.sql'
 model:
   anomaly_detection:
     features:
