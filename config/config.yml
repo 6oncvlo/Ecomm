@@ -5,9 +5,8 @@ data_loader:
   item_properties_part2: 'C:\Users\gonpr\Downloads\item_properties_part2.csv'
 data_preparation:
   session_duration: 1800
-  visitor_features:
-    thold_max_views_per_minute: 10
-    thold_repetitive_action: 5
+features:
+  visitor: '../src/data/queries/visitor_features.sql'
 model:
   anomaly_detection:
     features:
